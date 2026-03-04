@@ -9,6 +9,7 @@ import std::thread;
 const int WIDTH  = 80;
 const int HEIGHT = 30;
 const int MAX_PARTICLES = 2048;
+const int MAX_EXPLOSIONS = 16;
 
 // ─── 2D Vector using built-in SIMD type ────────────────────────
 alias Vec2 = float[<2>];
@@ -149,10 +150,7 @@ struct Fireworks
 
 fn void Fireworks.init(&self)
 {
-    self.count = 0;
-    self.timer = 0;
     self.next_launch = 0.5f;
-    self.frame = 0;
 }
 
 fn Particle* Fireworks.add_particle(&self)
@@ -264,9 +262,9 @@ fn void Fireworks.update(&self, float dt)
     }
 
     // Update particles and collect explosions
-    Vec2[16]  explode_pos;
-    Color[16] explode_color;
-    Shape[16] explode_shape;
+    Vec2[MAX_EXPLOSIONS]  explode_pos;
+    Color[MAX_EXPLOSIONS] explode_color;
+    Shape[MAX_EXPLOSIONS] explode_shape;
     int explode_count = 0;
 
     for (int i = 0; i < self.count; i++)
@@ -279,7 +277,7 @@ fn void Fireworks.update(&self, float dt)
         // Rocket reached apex -> explode
         if (p.kind == ROCKET && (p.vel.y >= 0 || !p.alive))
         {
-            if (explode_count < 16)
+            if (explode_count < MAX_EXPLOSIONS)
             {
                 explode_pos[explode_count]   = p.pos;
                 explode_color[explode_count] = color_random();
@@ -388,7 +386,7 @@ fn int main(String[] args)
     fw.init();
 
     float dt = 0.05f;
-    int max_frames = 300; // Run for ~15 seconds
+    int max_frames = 400; // Run for ~20 seconds
 
     for (int f = 0; f < max_frames; f++)
     {
@@ -404,7 +402,7 @@ fn int main(String[] args)
     {
         fw.launch_rocket();
     }
-    for (int f = 0; f < 80; f++)
+    for (int f = 0; f < 150; f++)
     {
         if (f % 5 == 0)
         {
